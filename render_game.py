@@ -1,72 +1,72 @@
 # render_game.py
 import cv2
 import numpy as np
-import time
+
+
+def overlay_rgba(frame_bgr, png, x, y):
+    h, w = png.shape[:2]
+    H, W = frame_bgr.shape[:2]
+
+    x1, y1 = max(0, x), max(0, y)
+    x2, y2 = min(W, x + w), min(H, y + h)
+
+    if x1 >= x2 or y1 >= y2:
+        return
+
+    src = png[(y1 - y):(y2 - y), (x1 - x):(x2 - x)]
+    dst = frame_bgr[y1:y2, x1:x2]
+
+    alpha = src[:, :, 3] / 255.0
+    for c in range(3):
+        dst[:, :, c] = alpha * src[:, :, c] + (1 - alpha) * dst[:, :, c]
+
 
 class RendererGame:
+
     def __init__(self, config=None):
         self.config = config or {}
         self.w = self.config.get("width", 1280)
         self.h = self.config.get("height", 720)
-        print("RendererGame initialized (OpenCV)")
+
+        # PNGs laden (mit Alpha!)
+        self.assets = {
+            ("friendly", "open"):   cv2.imread("friendly_open.png", cv2.IMREAD_UNCHANGED),
+            ("friendly", "closed"): cv2.imread("friendly_closed.png", cv2.IMREAD_UNCHANGED),
+            ("mean", "open"):       cv2.imread("mean_open.png", cv2.IMREAD_UNCHANGED),
+            ("mean", "closed"):     cv2.imread("mean_closed.png", cv2.IMREAD_UNCHANGED),
+        }
+
+        print("RendererGame initialized (PNG mode)")
 
     def render(self, game, now: float):
-        # Schwarzer Canvas
         frame = np.zeros((self.h, self.w, 3), dtype=np.uint8)
 
-        # Platzhalter-"Robot-Augen"
-        cx1, cx2 = int(self.w * 0.35), int(self.w * 0.65)
-        cy = int(self.h * 0.45)
-        eye_r = int(min(self.w, self.h) * 0.08)
+        robot_closed = (
+            game.state in {"ATTRACT", "PRIME", "COUNTDOWN"}
+            and now < getattr(game, "robot_blink_until", 0.0)
+        )
 
-        
-        if game.condition == "friendly":
-            # --- eyes ---
-            cv2.circle(frame, (cx1, cy), eye_r, (255, 255, 255), 3)
-            cv2.circle(frame, (cx2, cy), eye_r, (255, 255, 255), 3)
+        eye_state = "closed" if robot_closed else "open"
+        cond = getattr(game, "condition", "mean")
 
-            # pupils (leicht nach innen)
-            pupil_r = int(eye_r * 0.35)
-            cv2.circle(frame, (cx1 + 5, cy), pupil_r, (255, 255, 255), -1)
-            cv2.circle(frame, (cx2 - 5, cy), pupil_r, (255, 255, 255), -1)
+        if cond not in {"friendly", "mean"}:
+            cond = "mean"
 
-            # eyebrows (leicht hoch, weich)
-            cv2.line(frame, (cx1 - eye_r, cy - eye_r - 10),
-                            (cx1 + eye_r, cy - eye_r - 15), (255,255,255), 2)
-            cv2.line(frame, (cx2 - eye_r, cy - eye_r - 15),
-                            (cx2 + eye_r, cy - eye_r - 10), (255,255,255), 2)
+        eyes = self.assets[(cond, eye_state)]
 
-            
-        else:
-            # --- eyes (schmal) ---
-            cv2.ellipse(frame, (cx1, cy), (eye_r, int(eye_r * 0.4)),
-                        0, 0, 360, (255,255,255), 3)
-            cv2.ellipse(frame, (cx2, cy), (eye_r, int(eye_r * 0.4)),
-                        0, 0, 360, (255,255,255), 3)
+        if eyes is not None:
+            x = self.w // 2 - eyes.shape[1] // 2
+            y = int(self.h * 0.15)
+            overlay_rgba(frame, eyes, x, y)
 
-            # pupils (starr zentriert, kleiner)
-            pupil_r = int(eye_r * 0.25)
-            cv2.circle(frame, (cx1, cy), pupil_r, (255,255,255), -1)
-            cv2.circle(frame, (cx2, cy), pupil_r, (255,255,255), -1)
-
-            # eyebrows (hart, nach innen fallend)
-            cv2.line(frame, (cx1 - eye_r, cy - eye_r - 5),
-                            (cx1 + eye_r, cy - eye_r - 20), (255,255,255), 2)
-            cv2.line(frame, (cx2 - eye_r, cy - eye_r - 20),
-                            (cx2 + eye_r, cy - eye_r - 5), (255,255,255), 2)
-
-
-        
-
-        # Text je Zustand
+        # Text
         if game.state == "ATTRACT":
             txt = "Press SPACE to start"
         elif game.state == "PRIME":
             txt = "Priming..."
         elif game.state == "COUNTDOWN":
-            # Countdown: zeige 3..2..1 basierend auf Zeit im State
             elapsed = now - game.t_state
-            remaining = 3 - int(elapsed)  # 3,2,1
+            remaining = 3 - int(elapsed)
             remaining = max(1, min(3, remaining))
             txt = str(remaining)
         elif game.state == "DUEL":
@@ -76,7 +76,8 @@ class RendererGame:
         else:
             txt = game.state
 
-        # Text zeichnen
-        cv2.putText(frame, txt, (60, 120), cv2.FONT_HERSHEY_SIMPLEX, 2.0, (255, 255, 255), 4)
+        cv2.putText(frame, txt, (280, 620),
+                    cv2.FONT_HERSHEY_SIMPLEX, 2.0,
+                    (255, 255, 255), 4)
 
         return frame
