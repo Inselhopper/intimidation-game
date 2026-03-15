@@ -10,12 +10,15 @@ The project explores how minimal visual variations in a machine’s expression i
 
 ## Concept
 
-Two robotic eye configurations exist:
+The installation presents two possible robotic eye configurations:
 
 * **Cute Friendly** – round eyes, soft brows, subtle social cues
 * **Cold Hostile** – narrow eyes, rigid symmetry, non-blinking stare
 
-Participants are randomly assigned to a condition.
+Each trial randomly selects one of these configurations.
+
+The visual condition is determined before the participant starts the game. The visitor therefore encounters a machine that already appears to have a specific “attitude”.
+
 After a short priming phase and countdown, the staring contest begins.
 
 The first blink ends the duel.
