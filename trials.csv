@@ -151,3 +151,7 @@ timestamp_iso,trial_id,group,condition,blink_time_s,valid,note
 2026-02-14T16:27:14,56,A,friendly,3.63,1,
 2026-02-14T16:27:27,57,A,friendly,1.834,1,
 2026-02-14T16:32:57,58,B,friendly,3.279,1,
+2026-03-15T21:20:23,1,,,0.773,1,
+2026-03-15T21:20:43,2,A,unfriendly,7.075,1,
+2026-03-15T21:20:58,3,A,unfriendly,3.674,1,
+2026-03-15T21:21:14,4,B,friendly,6.227,1,

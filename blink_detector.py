@@ -14,7 +14,7 @@ def dbg(*args):
 
 def get_mediapipe_app(
     max_num_faces=1,
-    refine_landmarks=True,                 # wie bei dir "lief gut"
+    refine_landmarks=True,
     min_detection_confidence=0.5,
     min_tracking_confidence=0.5,
 ):

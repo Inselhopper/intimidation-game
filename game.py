@@ -14,6 +14,7 @@ class GameStateMachine:
         self.t_duel_start = None
         self.blink_time = None
         print("GameStateMachine initialized")
+        
 
     def update(self, *, start_pressed: bool, blink_event: bool, now: float):
         self.just_finished = False
@@ -24,8 +25,6 @@ class GameStateMachine:
 
         if self.state == "ATTRACT":
             if start_pressed:
-                self.group = random.choice(["A", "B"])
-                self.condition = random.choice(["friendly", "unfriendly"])
 
                 self.state = "PRIME"
                 self.t_state = now
@@ -55,6 +54,8 @@ class GameStateMachine:
 
         elif self.state == "RESULT":
             if start_pressed:
+                self.group = random.choice(["A", "B"])
+                self.condition = random.choice(["friendly", "unfriendly"])
                 self.state = "ATTRACT"
                 self.t_state = now
                 self.blink_time = None

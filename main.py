@@ -85,7 +85,8 @@ def main():
             if not face_ok:
                 face_ok_false_count += 1
 
-            # Robot blinkt zurück (nur vor Spielstart)
+            # Robot eyes blinking back but 
+    
             if blink_event and (game.state in PRESTART):
                 game.robot_blink_until = now + 0.12  # 120ms Blink
 
